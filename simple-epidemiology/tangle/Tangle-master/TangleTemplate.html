@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Tangle document</title>
+
+	<!-- Tangle -->
+	<script type="text/javascript" src="Tangle.js"></script>
+
+	<!-- TangleKit (optional) -->
+	<link rel="stylesheet" href="TangleKit/TangleKit.css" type="text/css">
+	<script type="text/javascript" src="TangleKit/mootools.js"></script>
+	<script type="text/javascript" src="TangleKit/sprintf.js"></script>
+	<script type="text/javascript" src="TangleKit/BVTouchable.js"></script>
+	<script type="text/javascript" src="TangleKit/TangleKit.js"></script>
+
+	<!-- example -->
+	<script type="text/javascript">
+
+		function setUpTangle () {
+
+			var element = document.getElementById("example");
+
+			var tangle = new Tangle(element, {
+				initialize: function () {
+					this.prior = 50;
+					this.y = 50;
+					this.z = 50;
+				},
+				update: function () {
+					this.post = 100 * (this.prior * this.y) / ((this.prior * this.y) + this.z * (100 - this.prior));
+				}
+			});
+		}
+
+	</script>
+</head>
+
+<body onload="setUpTangle();">
+
+	<p id="example">
+		In a group of people, we know this many people have a disease (this is called the prior probability): <span data-var="prior" class="TKAdjustableNumber" data-min="1" data-max="100">% </span><br>
+		This test detects  <span data-var="y" class="TKAdjustableNumber" data-min="1" data-max="100">% </span>of a disease when the disease is present<br>
+		but, the test sometimes indicates a disease is present when it's not - it is wrong <span data-var="z" class="TKAdjustableNumber" data-min="1" data-max="100">% </span>of the time<br>
+		so a positive test means there is a <span data-var="post" data-format="%.0f">%</span> probability that a positive test means the disease is present in a patient.
+	</p>
+
+</body>
+</html>

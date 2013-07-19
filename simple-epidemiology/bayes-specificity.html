@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Probabilistic reasoning</title>
+
+	<!-- Tangle -->
+	<script type="text/javascript" src="Tangle.js"></script>
+
+	<!-- TangleKit (optional) -->
+	<link rel="stylesheet" href="TangleKit/TangleKit.css" type="text/css">
+	<script type="text/javascript" src="TangleKit/mootools.js"></script>
+	<script type="text/javascript" src="TangleKit/sprintf.js"></script>
+	<script type="text/javascript" src="TangleKit/BVTouchable.js"></script>
+	<script type="text/javascript" src="TangleKit/TangleKit.js"></script>
+
+	<script type="text/javascript" src="d3.v3/d3.v3.js"></script>
+</head>
+
+<body onload="setUpTangle();">
+  <h2>Specificity of tests</h2>
+	<p id="example">
+
+                A diagnostic test is more useful if a negative result correctly identifies absense of disease. We call the proportion of people who don't have a disease and do have a negative test result the <i>specificity</i> of that test.<br><br>
+
+                Let's take another look at our population and test based on its specificity. Set the prior probability of a disease in the population you are studying here: <span data-var="prior" class="TKAdjustableNumber" data-min="0" data-max="100">% </span>, and set the specificity of the test here: <span data-var="spec" class="TKAdjustableNumber" data-min="0" data-max="100">% </span>. Of course, this therefore also means that (unless the test is 100% specific), that based on the specificity you chose, <span data-var="negspec" data-format="%.0f">%</span> in some cases the test will be positive even when there is no disease present - we call these cases <i>false positives</i>).<br><br>
+
+                You can see that when the specificity is high, there will be fewer false positives. (However, you might consider the case where we devise a "test" that doesn't reall measure anything but just indicates "negative" every time it's used: it's specificity will be 100% because it will always provide correct results in people without disease. But what would it's sensitivity be?)
+	</p>
+<p align="right"><a href="bayes-sensitivity.html">Prev: sensitivity</a>&nbsp &nbsp &nbsp<a href="bayes-example-bca.html">Next: example</a></p>
+
+		<script type="text/javascript">
+
+		function setUpTangle () {
+
+			var element = document.getElementById("example");
+
+			var tangle = new Tangle(element, {
+				initialize: function () {
+					this.prior = 100;
+					this.sens = 0;
+					this.spec = 0;
+                                        this.negsens = 100 - this.sens;
+                                        this.negspec = 100 - this.spec;
+				},
+				update: function () {
+                                        this.negsens = 100 - this.sens;
+                                        this.negspec = 100 - this.spec;
+					this.post = 100 
+                                           * (this.prior * this.sens) 
+                                           / ((this.prior * this.sens) 
+                                           + this.negspec * (100 - this.prior));
+                                var prior = this.prior;
+                                var sens = this.sens;
+                                var spec = this.spec;
+                                var negspec = this.negspec;
+                                var post = this.post;
+
+                                var priors = circles.selectAll('g .priors');
+                                priors.style("fill", "lightgreen");
+                                var specs = circles.selectAll('g .specs');
+
+                                // Just use one set of 100 out of the 300 circles as
+                                // an index set so we can iterate through them
+                                var priors = circles.selectAll('g .priors').select(
+                                function (d, i, j) {
+                                    // For each of the 100 circles:
+                                    // Set presence of disease based on prior probability
+                                    if (Math.floor(Math.random()*100) < prior) { 
+                                        specs[j][0]["style"]["fill"] = "lightgreen";
+                                        // Indicate if they have a negative test or not
+                                        if (Math.floor(Math.random()*100) < spec) { 
+                                            // Uh oh, presence of disease and negative test
+                                            // specs[j][0]["style"]["fill"] = "darkseagreen";
+                                        }
+                                        return this;}
+                                    else {
+                                        // In those without disease, see if they have a negative test
+                                        specs[j][0]["style"]["fill"] = "lightgreen";
+                                        if (Math.floor(Math.random()*100) < spec) { 
+                                            // Negative test and no disease
+                                            specs[j][0]["style"]["fill"] = "darkseagreen";
+                                            return null;}
+                                        else {
+                                        // Uh oh, no disease and a positive test, a false positive
+                                            specs[j][0]["style"]["fill"] = "red";
+                                            return null;}}});
+                                priors.style("fill", "black");}});}
+
+                        for (dataset = [], i=0, y=20; y < 520; y += 50) {
+                            for (x=100; x < 600; x += 50) {
+                                dataset[i++] = {"c0": 0, "c1": 0, "c2": 0, "pos": [x, y]};
+                            }
+                        }
+                        var keyset = [[100, 20], [100, 65], [100, 110]];
+
+                       // Create some keys
+                        var svgKeyContainer = d3.select("body").append("svg")
+                                    .attr("width",  1200)
+                                    .attr("height", 140);
+
+                        var keys = svgKeyContainer.selectAll("g")
+                                   .data(keyset)
+                                   .enter()
+                                   .append("g");
+                        keys
+                                   .append("circle")
+                                   .attr("cx", function(d) {
+			   		return d[0];})
+                                   .attr("cy", function(d) {
+			   		return d[1];})
+                                   .attr("r", 20)
+                        keys
+                                   .append("circle")
+                                   .attr("cx", function(d) {
+			   		return d[0];})
+                                   .attr("cy", function(d) {
+			   		return d[1];})
+                                   .attr("r", 10)
+                        var newkeys = keys.selectAll("circle");
+                        newkeys[0][0]["style"]["fill"] = "lightgreen";
+                        newkeys[0][1]["style"]["fill"] = "lightgreen";
+                        newkeys[1][0]["style"]["fill"] = "darkseagreen";
+                        newkeys[1][1]["style"]["fill"] = "lightgreen";
+                        newkeys[2][0]["style"]["fill"] = "red";
+                        newkeys[2][1]["style"]["fill"] = "lightgreen";
+
+                       keys
+                        .append('text')
+                        .text('Patients without disease')
+                        .attr("font-family", "sans-serif")
+                        .attr("font-size", "20px") 
+                        .attr('x', 150)
+                        .attr('y', 20);
+
+                       keys
+                        .append('text')
+                        .text('Patients with no disease and negative test')
+                        .attr("font-family", "sans-serif")
+                        .attr("font-size", "20px") 
+                        .attr('x', 150)
+                        .attr('y', 65);
+
+                       keys
+                        .append('text')
+                        .text('Patients with no disease and positive test (false positive)')
+                        .attr("font-family", "sans-serif")
+                        .attr("font-size", "20px") 
+                        .attr('x', 150)
+                        .attr('y', 110);
+
+                        var svgContainer = d3.select("body").append("svg")
+                                    .attr("width",  1500)
+                                    .attr("height", 1500);
+
+                        var circles = svgContainer.selectAll("g")
+                                   .data(dataset)
+                                   .enter()
+                                   .append("g");
+                        circles
+                                   .append("circle")
+                                   .attr("class", "specs")
+                                   .attr("cx", function(d) {
+			   		return d["pos"][0];})
+                                   .attr("cy", function(d) {
+			   		return d["pos"][1];})
+                                   .attr("r", 20)
+                                   .style("fill", "lightgreen");
+                        circles
+                                   .append("circle")
+                                   .attr("class", "priors")
+                                   .attr("cx", function(d) {
+			   		return d["pos"][0];})
+                                   .attr("cy", function(d) {
+			   		return d["pos"][1];})
+                                   .attr("r", 10)
+                                   .style("fill", "lightgreen");
+
+            
+                </script>
+              </body>
+            </html>

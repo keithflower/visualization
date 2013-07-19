@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Probabilistic reasoning</title>
+
+	<!-- Tangle -->
+	<script type="text/javascript" src="Tangle.js"></script>
+
+	<!-- TangleKit (optional) -->
+	<link rel="stylesheet" href="TangleKit/TangleKit.css" type="text/css">
+	<script type="text/javascript" src="TangleKit/mootools.js"></script>
+	<script type="text/javascript" src="TangleKit/sprintf.js"></script>
+	<script type="text/javascript" src="TangleKit/BVTouchable.js"></script>
+	<script type="text/javascript" src="TangleKit/TangleKit.js"></script>
+
+	<script type="text/javascript" src="d3.v3/d3.v3.js"></script>
+</head>
+
+<body onload="setUpTangle();">
+  <h2>Prior probability</h2>
+	<p id="example">
+
+		In a defined group of people (also referred to as a <i>population</i>), we happen to know that some percentage of the group has a disease (this is called the <i>prior probability</i>). For example, we might know from past studies that about 4% of women who are age 40 have breast cancer.<br><br>
+                The circles below represent 100 people out of some defined population. You can indicate here that <span data-var="prior" class="TKAdjustableNumber" data-min="0" data-max="100">% </span> people in that defined population have a disease. We can go through each of the 100 people below one by one and calculate the probability they have this disease (each time you adjust a value, whether or not a patient has a disease is recalculated).<br><br>
+
+<p align="right"><a href="bayes-sensitivity.html">Next: sensitivity of tests</a></p>
+
+	</p>
+
+
+
+		<script type="text/javascript">
+
+		function setUpTangle () {
+
+			var element = document.getElementById("example");
+
+			var tangle = new Tangle(element, {
+				initialize: function () {
+					this.prior = 0;
+					this.sens = 100;
+					this.spec = 0;
+                                        this.negsens = 100 - this.sens;
+                                        this.negspec = 100 - this.spec;
+				},
+				update: function () {
+                                        this.negsens = 100 - this.sens;
+                                        this.negspec = 100 - this.spec;
+					this.post = 100 
+                                           * (this.prior * this.sens) 
+                                           / ((this.prior * this.sens) 
+                                           + this.negspec * (100 - this.prior));
+                                var prior = this.prior;
+                                var sens = this.sens;
+                                var spec = this.spec;
+                                var negspec = this.negspec;
+                                var post = this.post;
+
+                                var priors = circles.selectAll('g .priors');
+                                priors.style("fill", "lightgreen");
+                                var senss = circles.selectAll('g .senss');
+                                senss.style("fill", "lightgreen");
+
+                                // Use one set of 100 out of the 200 circles as
+                                // an index set so we can iterate through them
+                                var priors = circles.selectAll('g .priors').select(
+                                function (d, i, j) {
+                                    // For each of the 100 circle sets:
+                                    // Set presence of disease based on prior probability
+                                    if (Math.floor(Math.random()*100) < prior) { 
+                                        // Disease present (return of 'this' rather
+                                        // than null will result in the collection
+                                        return this;}
+                                    else {
+                                        // Disease not present
+                                        return null;}});
+                                priors.style("fill", "black");}});}
+
+                        for (dataset = [], i=0, y=20; y < 520; y += 50) {
+                            for (x=100; x < 600; x += 50) {
+                                dataset[i++] = {"c0": 0, "c1": 0, "c2": 0, "pos": [x, y]};
+                            }
+                        }
+                        var keyset = [[100, 20], [100, 70]];
+
+                       // Create some keys
+                        var svgKeyContainer = d3.select("body").append("svg")
+                                    .attr("width",  1200)
+                                    .attr("height", 100);
+
+                        var keys = svgKeyContainer.selectAll("g")
+                                   .data(keyset)
+                                   .enter()
+                                   .append("g");
+                        keys
+                                   .append("circle")
+                                   .attr("cx", function(d) {
+			   		return d[0];})
+                                   .attr("cy", function(d) {
+			   		return d[1];})
+                                   .attr("r", 20)
+                        keys
+                                   .append("circle")
+                                   .attr("cx", function(d) {
+			   		return d[0];})
+                                   .attr("cy", function(d) {
+			   		return d[1];})
+                                   .attr("r", 10)
+                        var newkeys = keys.selectAll("circle");
+                        newkeys[0][0]["style"]["fill"] = "lightgreen";
+                        newkeys[0][1]["style"]["fill"] = "lightgreen";
+                        newkeys[1][0]["style"]["fill"] = "lightgreen";
+                        newkeys[1][1]["style"]["fill"] = "black";
+
+                       keys
+                        .append('text')
+                        .text('Patient without disease')
+                        .attr("font-family", "sans-serif")
+                        .attr("font-size", "20px") 
+                        .attr('x', 150)
+                        .attr('y', 20);
+
+                       keys
+                        .append('text')
+                        .text('Patient with disease')
+                        .attr("font-family", "sans-serif")
+                        .attr("font-size", "20px") 
+                        .attr('x', 150)
+                        .attr('y', 70);
+
+                        var svgContainer = d3.select("body").append("svg")
+                                    .attr("width",  1500)
+                                    .attr("height", 1500);
+
+                        var circles = svgContainer.selectAll("g")
+                                   .data(dataset)
+                                   .enter()
+                                   .append("g");
+                        circles
+                                   .append("circle")
+                                   .attr("class", "senss")
+                                   .attr("cx", function(d) {
+			   		return d["pos"][0];})
+                                   .attr("cy", function(d) {
+			   		return d["pos"][1];})
+                                   .attr("r", 20)
+                                   .style("fill", "lightgreen");
+                        circles
+                                   .append("circle")
+                                   .attr("class", "priors")
+                                   .attr("cx", function(d) {
+			   		return d["pos"][0];})
+                                   .attr("cy", function(d) {
+			   		return d["pos"][1];})
+                                   .attr("r", 10)
+                                   .style("fill", "lightgreen");
+            
+                </script>
+              </body>
+            </html>
