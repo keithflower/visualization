@@ -10,4 +10,4 @@ They were created using the excellent Tangle and D3 libs.
 
 Copyright © 2013 Keith Flower
 
-Distributed under the Eclipse Public License, the same as Clojure.
+Distributed under the MIT License.
